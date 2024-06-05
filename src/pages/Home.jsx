@@ -10,10 +10,11 @@ import {
   Snackbar,
   Alert,
   Pagination,
+  TextField,
+  debounce,
 } from "@mui/material";
 import Lottie from "react-lottie";
 import Loading from "../loading.json";
-
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -23,6 +24,7 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [count, setCount] = useState(0);
+  const [search, setSearch] = useState("");
 
   function handleChange(event) {
     setCategory(event.target.value);
@@ -40,6 +42,18 @@ export default function Home() {
     }
   }
 
+  function handleSearch(val) {
+    if (val.length < 1) fetchProducts();
+    setSearch(val);
+    let item = products.filter((x) => {
+      if (x.title.toLowerCase().includes(val.toLowerCase())) {
+        return x;
+      }
+    });
+
+    setProducts(item);
+  }
+
   async function fetchProducts() {
     setLoading(true);
     await fetch("https://fakestoreapi.com/products")
@@ -47,11 +61,11 @@ export default function Home() {
       .then((json) => {
         setLoading(false);
         setProducts(json);
-        if (json.length%10 < 5 && json.length%10 !=0) {
-            setCount((Math.round(json.length / 10))+1);
-          } else {
-            setCount(Math.round(json.length / 10));
-          }
+        if (json.length % 10 < 5 && json.length % 10 != 0) {
+          setCount(Math.round(json.length / 10) + 1);
+        } else {
+          setCount(Math.round(json.length / 10));
+        }
       });
   }
 
@@ -61,8 +75,8 @@ export default function Home() {
       .then((res) => res.json())
       .then((json) => {
         setProducts(json);
-        if (json.length%10 < 5) {
-          setCount((Math.round(json.length / 10))+1);
+        if (json.length % 10 < 5) {
+          setCount(Math.round(json.length / 10) + 1);
         } else {
           setCount(Math.round(json.length / 10));
         }
@@ -84,59 +98,86 @@ export default function Home() {
 
   return (
     <Stack gap="16px">
-      <Stack justifyContent="space-between" alignItems="center" sx={{flexDirection:{xs:"column",sm:"row"}}}>
-        <Stack  direction="row" alignItems="center"  sx={{width:{xs:"100%",sm:"fit-content"}}}>
-        <img src="/logo.jpg" alt="Logo" width="150px" height="100px" />
-        <Typography sx={{fontSize:"24px",fontWeight:"600"}}>Shoping Cart</Typography>
+      <Stack
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ flexDirection: { xs: "column", sm: "row" } }}
+      >
+        <Stack
+          direction="row"
+          alignItems="center"
+          sx={{ width: { xs: "100%", sm: "fit-content" } }}
+        >
+          <img src="/logo.jpg" alt="Logo" width="150px" height="100px" />
+          <Typography sx={{ fontSize: "24px", fontWeight: "600" }}>
+            Shoping Cart
+          </Typography>
         </Stack>
-      <Stack sx={{ padding: "16px",flexDirection:{xs:"column",sm:"row"},gap:"16px",alignItems:"center",justifyContent:"flex-end",width:{xs:"100%",sm:"fit-content"} }}>
-        <FormControl sx={{width:{xs:"100%",sm:"fit-content"}}}>
-          <InputLabel style={{ backgroundColor: "white" }}>Category</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={category}
-            onChange={handleChange}
-            sx={{ width: {xs:"full-width",sm:"200px"} }}
-          >
-            <MenuItem value={"all"}>
-              <Typography>All Products</Typography>
-            </MenuItem>
-            <MenuItem value={"electronics"}>
-              <Typography>Electronics</Typography>
-            </MenuItem>
-            <MenuItem value={"jewelery"}>
-              <Typography>Jewelery</Typography>
-            </MenuItem>
-            <MenuItem value={"men's clothing"}>
-              <Typography>Men's clothing</Typography>
-            </MenuItem>
-            <MenuItem value={"women's clothing"}>
-              <Typography>Women's clothing</Typography>
-            </MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{width:{xs:"100%",sm:"fit-content"}}}>
-          <InputLabel style={{ backgroundColor: "white" }}>Price</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={type}
-            onChange={handleChange1}
-            sx={{ width:{xs:"full-width",sm:"200px"} }}
-          >
-            <MenuItem value={"0"}>
-              <Typography>Default</Typography>
-            </MenuItem>
-            <MenuItem value={"1"}>
-              <Typography>Price Low to High</Typography>
-            </MenuItem>
-            <MenuItem value={"2"}>
-              <Typography>Price High to Low</Typography>
-            </MenuItem>
-          </Select>
-        </FormControl>
-      </Stack>
+        <Stack
+          sx={{
+            padding: "16px",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: "16px",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            width: { xs: "100%", sm: "fit-content" },
+          }}
+        >
+          <TextField
+            variant="outlined"
+            label="Search"
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+          <FormControl sx={{ width: { xs: "100%", sm: "fit-content" } }}>
+            <InputLabel style={{ backgroundColor: "white" }}>
+              Category
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={category}
+              onChange={handleChange}
+              sx={{ width: { xs: "full-width", sm: "200px" } }}
+            >
+              <MenuItem value={"all"}>
+                <Typography>All Products</Typography>
+              </MenuItem>
+              <MenuItem value={"electronics"}>
+                <Typography>Electronics</Typography>
+              </MenuItem>
+              <MenuItem value={"jewelery"}>
+                <Typography>Jewelery</Typography>
+              </MenuItem>
+              <MenuItem value={"men's clothing"}>
+                <Typography>Men's clothing</Typography>
+              </MenuItem>
+              <MenuItem value={"women's clothing"}>
+                <Typography>Women's clothing</Typography>
+              </MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ width: { xs: "100%", sm: "fit-content" } }}>
+            <InputLabel style={{ backgroundColor: "white" }}>Price</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={type}
+              onChange={handleChange1}
+              sx={{ width: { xs: "full-width", sm: "200px" } }}
+            >
+              <MenuItem value={"0"}>
+                <Typography>Default</Typography>
+              </MenuItem>
+              <MenuItem value={"1"}>
+                <Typography>Price Low to High</Typography>
+              </MenuItem>
+              <MenuItem value={"2"}>
+                <Typography>Price High to Low</Typography>
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
       </Stack>
       {loading && (
         <Stack
@@ -166,6 +207,11 @@ export default function Home() {
           products
             .slice(page * 10, (page + 1) * 10)
             .map((x) => <ProductCard products={x} key={x.id} />)}
+        {products.length < 1 && (
+          <Typography sx={{ fontWeight: "bold", fontSize: "18px" }}>
+            Sorry no Items to be displayed
+          </Typography>
+        )}
         {!products.length > 0 && !loading && (
           <Snackbar
             open={open}
